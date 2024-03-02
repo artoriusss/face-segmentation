@@ -5,14 +5,20 @@ from pathlib import Path
 import tarfile
 import shutil
 
-URL = "https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/static/wiki_crop.tar"
 
 class Dataset:
-    def load(self):
+    def load(self, url):
+        """
+            Downloads and extracts the dataset from the URL
+            Args:
+                url (str): URL of the dataset
+            Returns:
+        """
+        os.makedirs(RAW_DATA,exist_ok=True)
         tar_path = RAW_DATA / 'raw.tar'
         print('Loading dataset...')
 
-        response = requests.get(URL)
+        response = requests.get(url)
         open(tar_path, "wb").write(response.content)
 
         print('Extracting...')
