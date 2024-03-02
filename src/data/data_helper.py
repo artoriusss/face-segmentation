@@ -41,7 +41,7 @@ class DataHelper():
 
         return (x1, y1, x2, y2)
 
-    def resize_pad(img, size):
+    def resize_pad(self, img, size):
         """
             Resize and pad an image to fit the given size
             Args:
@@ -66,7 +66,7 @@ class DataHelper():
             new_h, new_w = sh, sw
 
         scaled_img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        canvas = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+        canvas = np.zeros((size[1], size[0]), dtype=np.uint8)
         offset_x = (size[0] - new_w) // 2
         offset_y = (size[1] - new_h) // 2
         canvas[offset_y:offset_y+new_h, offset_x:offset_x+new_w] = scaled_img

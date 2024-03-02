@@ -11,12 +11,17 @@ class FaceSegmentation:
     def __init__(self, dataHelper):
         self.data_helper = dataHelper
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(DLIB_PREDICTOR_PATH)
+        self.predictor = dlib.shape_predictor(str(DLIB_PREDICTOR_PATH))
 
     def perform_segmentation(self,requested_shape):
         print('Face segmentation started...')
         self._create_folder()
-        image_paths = [path for path in  Path(DATA_CROPPED).glob('**/*.jpg')]
+        from pathlib import Path
+
+        for path in Path(DATA_CROPPED).rglob('*.jpg'):
+            print(path)
+        image_paths = [path for path in Path(DATA_CROPPED).rglob('*.jpg')]
+
         for image_path in tqdm(image_paths):
             image = cv2.imread(str(image_path))
             grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,7 +49,7 @@ class FaceSegmentation:
 
                 face_cropped = cv2.bitwise_and(grayscale_image, grayscale_image, mask=mask)
 
-                scaled = self.data_helper.resizeAndPad(face_cropped, requested_shape)
+                scaled = self.data_helper.resize_pad(face_cropped, requested_shape)
                 output_path = DATA_PREPROCESSED / f'{image_path.stem}{image_path.suffix}'
                 cv2.imwrite(str(output_path), scaled)
         print('Images segmented successfully.')
