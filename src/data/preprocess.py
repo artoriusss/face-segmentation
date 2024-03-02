@@ -1,26 +1,15 @@
 from src.data.face_cropper import FaceCropper
-from .path import RAW_DATA 
+from src.data.face_segmentation import FaceSegmentation
 from .data_helper import DataHelper
 
-from pathlib import Path
-import shutil
-import os 
-
-import numpy as np
-import dlib
-import facer
-import glob
-import cv2
-
+desired_shape = (256,256)
 
 class Preprocesser():
     def __init__(self):
         self.helper = DataHelper()
-        self.face_cropper = FaceCropper()
+        self.face_cropper = FaceCropper(self.helper)
+        self.face_segmentation = FaceSegmentation(self.helper)
 
-    def prt(self):
+    def preprocess(self,requested_shape=desired_shape):
         self.face_cropper.crop()
-
-    
-
-
+        self.face_segmentation.perform_segmentation(requested_shape)

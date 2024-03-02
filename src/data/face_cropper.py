@@ -5,15 +5,14 @@ import torch
 import os
 
 from tqdm import tqdm
-from src.data.data_helper import DataHelper
 
 from src.data.path import DATA_CROPPED, RAW_DATA
 
 class FaceCropper:
-    def __init__(self):
+    def __init__(self,dataHelper):
+        self.data_helper = dataHelper
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.face_detector = facer.face_detector('retinaface/mobilenet', device=self.device)
-        self.data_helper = DataHelper()
 
     def crop(self):
         print('Cropping images...')

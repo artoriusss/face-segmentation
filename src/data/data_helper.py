@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 class DataHelper():
-    def is_frontal_face(shape):
+    def is_frontal_face(self, shape):
         """
             Check if the face is "anfas" (frontal face) by comparing the distances between points
             on the left and right sides of the face to the center point (nose tip, for example).
