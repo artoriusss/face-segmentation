@@ -18,8 +18,6 @@ class FaceSegmentation:
         self._create_folder()
         from pathlib import Path
 
-        for path in Path(DATA_CROPPED).rglob('*.jpg'):
-            print(path)
         image_paths = [path for path in Path(DATA_CROPPED).rglob('*.jpg')]
 
         for image_path in tqdm(image_paths):
