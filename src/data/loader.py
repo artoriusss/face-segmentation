@@ -14,10 +14,11 @@ class Dataset:
                 url (str): URL of the dataset
             Returns:
         """
+        os.makedirs(RAW_DATA,exist_ok=True)
         tar_path = RAW_DATA / 'raw.tar'
         print('Loading dataset...')
 
-        response = requests.get(URL)
+        response = requests.get(url)
         open(tar_path, "wb").write(response.content)
 
         print('Extracting...')

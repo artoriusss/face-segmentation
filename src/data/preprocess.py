@@ -1,3 +1,4 @@
+from src.data.face_cropper import FaceCropper
 from .path import RAW_DATA 
 from .data_helper import DataHelper
 
@@ -15,9 +16,10 @@ import cv2
 class Preprocesser():
     def __init__(self):
         self.helper = DataHelper()
+        self.face_cropper = FaceCropper()
 
     def prt(self):
-        print('works')
+        self.face_cropper.crop()
 
     
 
