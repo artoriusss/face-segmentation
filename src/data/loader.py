@@ -1,7 +1,6 @@
 import requests
 import os 
 from .path import RAW_DATA
-from pathlib import Path
 import tarfile
 import shutil
 

@@ -1,9 +1,10 @@
+import hashlib
 import os
-from anyio import Path
 import cv2
 import dlib
 import numpy as np
 
+from pathlib import Path
 from tqdm import tqdm
 from src.data.path import DATA_CROPPED, DATA_PREPROCESSED, DLIB_PREDICTOR_PATH
 
@@ -16,10 +17,10 @@ class FaceSegmentation:
     def perform_segmentation(self,requested_shape):
         print('Face segmentation started...')
         self._create_folder()
-        from pathlib import Path
+
+        processed_image_hashes = set()
 
         image_paths = [path for path in Path(DATA_CROPPED).rglob('*.jpg')]
-
         for image_path in tqdm(image_paths):
             image = cv2.imread(str(image_path))
             grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -50,6 +51,16 @@ class FaceSegmentation:
                 aligned_face = self.data_helper.get_aligned_face(self.detector, self.predictor, face_cropped)
 
                 scaled = self.data_helper.resize_pad(face_cropped, requested_shape)
+                if scaled is None:
+                    continue
+                
+                img_hash = hashlib.md5(scaled).hexdigest()
+                if img_hash in processed_image_hashes:
+                    print('duplicate skipped')
+                    continue
+
+                processed_image_hashes.add(img_hash)
+
                 output_path = DATA_PREPROCESSED / f'{image_path.stem}{image_path.suffix}'
                 cv2.imwrite(str(output_path), scaled)
         print('Images segmented successfully.')

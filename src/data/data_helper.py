@@ -53,7 +53,19 @@ class DataHelper():
             Returns:
                 numpy.ndarray: Resized and padded image
         """
-        h, w = img.shape[:2]
+        # Threshold to find non-black regions
+        _, thresh = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)
+
+        # Find contours
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Get bounding box of non-black regions
+        x, y, w, h = cv2.boundingRect(contours[0])
+
+        # Crop the image to the bounding box
+        cropped_img = img[y:y+h, x:x+w]
+
+        h, w = cropped_img.shape[:2]
         sh, sw = size
 
         aspect = w/h  
@@ -72,6 +84,12 @@ class DataHelper():
         offset_x = (size[0] - new_w) // 2
         offset_y = (size[1] - new_h) // 2
         canvas[offset_y:offset_y+new_h, offset_x:offset_x+new_w] = scaled_img
+
+        num_black_pixels = np.sum(canvas == 0)
+
+        # Check if the number of black pixels exceeds the threshold
+        if num_black_pixels > 2500:
+            return None
 
         return canvas
 
