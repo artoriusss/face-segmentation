@@ -14,7 +14,6 @@ def main():
     embedings = emb.get_embeddings()
     embedings = emb.unpack_embeddings(embedings)
     clusters = emb.kmeans(embedings)
-    print('clusters: ', clusters)
     emb.visualise_clusters(clusters)
 
 
