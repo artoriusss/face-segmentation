@@ -88,7 +88,7 @@ class DataHelper():
         num_black_pixels = np.sum(canvas == 0)
 
         # Check if the number of black pixels exceeds the threshold
-        if num_black_pixels > 2600:
+        if num_black_pixels > 2500:
             return None
 
         return canvas
