@@ -5,7 +5,9 @@ URL = "https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/static/wiki_crop.tar"
 
 def main():
     #Dataset().load(URL)
-    Preprocesser().preprocess()
+    # preprocesser = Preprocesser()
+    # preprocesser.preprocess()
+    # preprocesser.preprocess(gray_scaled=False)
 
 if __name__ == '__main__':
     main()

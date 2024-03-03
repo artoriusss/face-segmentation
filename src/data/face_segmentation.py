@@ -6,7 +6,7 @@ import numpy as np
 
 from pathlib import Path
 from tqdm import tqdm
-from src.data.path import DATA_CROPPED, DATA_PREPROCESSED, DLIB_PREDICTOR_PATH
+from src.data.path import DATA_CROPPED, DATA_PREPROCESSED, DATA_PREPROCESSED_COLORED, DLIB_PREDICTOR_PATH
 
 class FaceSegmentation:
     def __init__(self, dataHelper):
@@ -14,9 +14,11 @@ class FaceSegmentation:
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(str(DLIB_PREDICTOR_PATH))
 
-    def perform_segmentation(self,requested_shape):
+    def perform_segmentation(self,requested_shape, gray_scaled=True):
         print('Face segmentation started...')
-        self._create_folder()
+        folder_path = DATA_PREPROCESSED if gray_scaled else DATA_PREPROCESSED_COLORED
+        print(folder_path)
+        self._create_folder(folder_path)
 
         processed_image_hashes = set()
 
@@ -45,10 +47,9 @@ class FaceSegmentation:
 
                 mask = np.zeros_like(grayscale_image)
                 cv2.fillConvexPoly(mask, hull, 255)
-
-                face_cropped = cv2.bitwise_and(grayscale_image, grayscale_image, mask=mask)
-
-                aligned_face = self.data_helper.get_aligned_face(self.detector, self.predictor, face_cropped)
+                
+                img = grayscale_image if gray_scaled else image
+                face_cropped = cv2.bitwise_and(img, img, mask=mask)
 
                 scaled = self.data_helper.resize_pad(face_cropped, requested_shape)
                 if scaled is None:
@@ -56,15 +57,14 @@ class FaceSegmentation:
                 
                 img_hash = hashlib.md5(scaled).hexdigest()
                 if img_hash in processed_image_hashes:
-                    print('duplicate skipped')
                     continue
 
                 processed_image_hashes.add(img_hash)
 
-                output_path = DATA_PREPROCESSED / f'{image_path.stem}{image_path.suffix}'
+                output_path = folder_path / f'{image_path.stem}{image_path.suffix}'
                 cv2.imwrite(str(output_path), scaled)
         print('Images segmented successfully.')
         print(f'Segmented images count: {len(os.listdir(DATA_PREPROCESSED))}')
     
-    def _create_folder(self):
-        os.makedirs(DATA_PREPROCESSED, exist_ok=True)
+    def _create_folder(self,folder_path):
+        os.makedirs(folder_path, exist_ok=True)
