@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import dlib
+import os
 
 class DataHelper():
     def is_frontal_face(self, shape):
@@ -90,6 +92,99 @@ class DataHelper():
             return None
 
         return canvas
+
+    # def get_aligned_face(self, detector, predictor, image):
+    #     faces = detector(image)
+        
+    #     for i, face in enumerate(faces):
+    #         landmarks = predictor(image, face)
+            
+    #         left_eye_points = np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(36, 42)], dtype="float32")
+    #         right_eye_points = np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(42, 48)], dtype="float32")
+            
+    #         left_eye_center = left_eye_points.mean(axis=0)
+    #         right_eye_center = right_eye_points.mean(axis=0)
+            
+    #         dy = right_eye_center[1] - left_eye_center[1]
+    #         dx = right_eye_center[0] - left_eye_center[0]
+    #         angle = np.degrees(np.arctan2(dy, dx))  
+            
+    #         desired_left_eye = (0.35, 0.35)
+    #         desired_right_eye = (0.65, 0.35)
+            
+    #         desired_face_width = 256
+    #         desired_face_height = desired_face_width  # Assuming square dimensions for simplicity
+    #         desired_dist = desired_right_eye[0] - desired_left_eye[0]
+    #         desired_dist *= desired_face_width
+    #         scale = desired_dist / np.linalg.norm(right_eye_center - left_eye_center)
+            
+    #         eyes_center = ((left_eye_center[0] + right_eye_center[0]) / 2,
+    #                     (left_eye_center[1] + right_eye_center[1]) / 2)
+            
+    #         M = cv2.getRotationMatrix2D(tuple(eyes_center), angle, scale)
+            
+    #         tX = desired_face_width * 0.5
+    #         tY = desired_face_height * desired_left_eye[1]
+    #         M[0, 2] += (tX - eyes_center[0])
+    #         M[1, 2] += (tY - eyes_center[1])
+            
+    #         (w, h) = (desired_face_width, desired_face_height)
+    #         return cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC)
+
+    def align_faces(self, input_dir, output_dir, model_dir):
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor(str(model_dir))  # Load the face landmark predictor
+        
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        for image_name in os.listdir(input_dir):
+            if not (image_name.lower().endswith('.png') or image_name.lower().endswith('.jpg') or image_name.lower().endswith('.jpeg')):
+                continue
+            
+            image_path = os.path.join(input_dir, image_name)
+            image = cv2.imread(image_path)
+            
+            faces = detector(image)
+            
+            for i, face in enumerate(faces):
+                landmarks = predictor(image, face)
+                
+                left_eye_points = np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(36, 42)], dtype="float32")
+                right_eye_points = np.array([(landmarks.part(n).x, landmarks.part(n).y) for n in range(42, 48)], dtype="float32")
+                
+                left_eye_center = left_eye_points.mean(axis=0)
+                right_eye_center = right_eye_points.mean(axis=0)
+                
+                dy = right_eye_center[1] - left_eye_center[1]
+                dx = right_eye_center[0] - left_eye_center[0]
+                angle = np.degrees(np.arctan2(dy, dx))  
+                
+                desired_left_eye = (0.35, 0.35)
+                desired_right_eye = (0.65, 0.35)
+                
+                desired_face_width = 256
+                desired_face_height = desired_face_width  # Assuming square dimensions for simplicity
+                desired_dist = desired_right_eye[0] - desired_left_eye[0]
+                desired_dist *= desired_face_width
+                scale = desired_dist / np.linalg.norm(right_eye_center - left_eye_center)
+                
+                eyes_center = ((left_eye_center[0] + right_eye_center[0]) / 2,
+                            (left_eye_center[1] + right_eye_center[1]) / 2)
+                
+                M = cv2.getRotationMatrix2D(tuple(eyes_center), angle, scale)
+                
+                tX = desired_face_width * 0.5
+                tY = desired_face_height * desired_left_eye[1]
+                M[0, 2] += (tX - eyes_center[0])
+                M[1, 2] += (tY - eyes_center[1])
+                
+                (w, h) = (desired_face_width, desired_face_height)
+                output = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC)
+                
+                aligned_face_filename = f"{os.path.splitext(image_name)[0]}.jpg"
+                aligned_face_path = os.path.join(output_dir, aligned_face_filename)
+                cv2.imwrite(aligned_face_path, output)
 
 
     
