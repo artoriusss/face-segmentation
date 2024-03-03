@@ -47,6 +47,8 @@ class FaceSegmentation:
 
                 face_cropped = cv2.bitwise_and(grayscale_image, grayscale_image, mask=mask)
 
+                aligned_face = self.data_helper.get_aligned_face(self.detector, self.predictor, face_cropped)
+
                 scaled = self.data_helper.resize_pad(face_cropped, requested_shape)
                 output_path = DATA_PREPROCESSED / f'{image_path.stem}{image_path.suffix}'
                 cv2.imwrite(str(output_path), scaled)
@@ -54,4 +56,4 @@ class FaceSegmentation:
         print(f'Segmented images count: {len(os.listdir(DATA_PREPROCESSED))}')
     
     def _create_folder(self):
-        os.makedirs(DATA_PREPROCESSED,exist_ok=True)
+        os.makedirs(DATA_PREPROCESSED, exist_ok=True)
