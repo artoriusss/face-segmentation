@@ -15,7 +15,7 @@ class DataTransformation:
   
   def perform_pca(self, data):
      print('Performing PCA...')
-     pca = PCA(n_components=0.85)
+     pca = PCA(n_components=50)
      pca.fit(data)
      tranformed_data = pca.transform(data)
      print(tranformed_data.shape)

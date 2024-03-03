@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import cv2
+from sklearn.metrics import silhouette_score
 from tqdm import tqdm
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
@@ -17,6 +18,7 @@ class DeepFaceEmbedder():
 
         img_folder = str(DATA_ALIGNED)
         img_path = os.listdir(img_folder)
+        img_path = random.sample(img_path, 1000)
 
         output_folder = str(INVERSE_PATH)
         os.makedirs(output_folder, exist_ok=True)
@@ -64,10 +66,30 @@ class DeepFaceEmbedder():
         for emb in embeddings:
             embs.append(emb[0]['embedding'])
         return embs
+    
+    def run_kmeans_silouhette_score(self,embeddings):
+        K_options = range(2, 50)
+        silouhette_scores = []
 
-    def kmeans(self, embeddings):
+        for num_clusters in K_options:
+            print(f"Number of clusters: {num_clusters}")
+            clustering = KMeans(n_clusters=num_clusters,).fit(embeddings)
+
+            sklearn_silhouette_score = silhouette_score(embeddings,clustering.labels_)
+            silouhette_scores.append(sklearn_silhouette_score)
+            print(f"scikit-learn silhouette score: {sklearn_silhouette_score}")
+        return K_options, silouhette_scores
+    
+    def plot_silouhette_score(self, K_options, sklearn_silhouette_score):
+        plt.plot(K_options, sklearn_silhouette_score,marker='o')
+        plt.ylabel('Custom silhouette score')
+        plt.xlabel('Number of clusters')
+        plt.xticks(K_options)
+        plt.show()
+
+    def kmeans(self, embeddings,k):
         image_paths = os.listdir(str(DATA_ALIGNED))
-        kmeans = KMeans(n_clusters=5, random_state=42).fit(embeddings)
+        kmeans = KMeans(n_clusters=k, random_state=42).fit(embeddings)
         labels = kmeans.labels_
 
         image_clusters = {label: [] for label in set(labels)}
@@ -107,4 +129,14 @@ class DeepFaceEmbedder():
                 ax.axis('off')
 
             plt.tight_layout()
+            plt.show()
+
+    def visualise_average(self, image_clusters):
+        for cluster_label, image_paths_in_cluster in image_clusters.items():
+            imgs = np.array([(cv2.imread(os.path.join(str(DATA_ALIGNED), path), cv2.IMREAD_GRAYSCALE)).flatten() for path in image_paths_in_cluster])
+            avg = np.mean(imgs, axis=0)
+            print(avg.shape)
+            plt.imshow(avg.reshape((256,256)), cmap='gray')
+            plt.title(f"Cluster {cluster_label}")
+            plt.axis('off')
             plt.show()

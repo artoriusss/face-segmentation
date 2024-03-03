@@ -18,7 +18,7 @@ class Visualize():
 
             axes = [ax for sublist in axes for ax in (sublist if isinstance(sublist, np.ndarray) else [sublist])]
             for ax, img_data in zip(axes, images_to_display):
-                ax.imshow(img_data.reshape((64,64)),cmap='gray')
+                ax.imshow(img_data.reshape((256,256)),cmap='gray')
                 ax.set_title(f"Cluster {cluster_label}")
                 ax.axis('off')  # Hide axes ticks
 
@@ -27,4 +27,14 @@ class Visualize():
 
         plt.tight_layout()
         plt.show()
+
+    def visualize_average(self, data, labels):
+        for cluster_label in np.unique(labels):
+            images_in_cluster = data[labels == cluster_label]
+            avg = np.mean(images_in_cluster, axis=0)
+            print(avg.shape)
+            plt.imshow(avg.reshape((256,256)), cmap='gray')
+            plt.title(f"Cluster {cluster_label}")
+            plt.axis('off')
+            plt.show()
         
